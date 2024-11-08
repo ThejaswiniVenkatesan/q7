@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # Backend service
+  backend:
+    build:
+      context: ./backend
+    container_name: backend
+    ports:
+      - "5000:5000"  # Expose backend on port 5000
+    environment:
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=example
+      - DB_NAME=myapp
+    depends_on:
+      - db
+    networks:
+      - myapp-network
+
+  # Frontend service
+  frontend:
+    build:
+      context: ./frontend
+    container_name: frontend
+    ports:
+      - "80:80"  # Expose frontend on port 80
+    depends_on:
+      - backend
+    networks:
+      - myapp-network
+
+  # Database service (PostgreSQL)
+  db:
+    image: postgres:13
+    container_name: db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: myapp
+    ports:
+      - "5432:5432"  # Expose database on port 5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - myapp-network
+
+# Define the network for communication between services
+networks:
+  myapp-network:
+    driver: bridge
+
+# Define persistent data storage for PostgreSQL
+volumes:
+  postgres-data:
